@@ -6,28 +6,10 @@ const orderSchema = new Schema({
         ref: 'User',  
         required: true 
     },
-    car: { 
-        type: Schema.Types.ObjectId, 
-        ref: 'Car',  
-        required: true 
-    },
     configuration: {
-        engine: { 
-            type: String, 
-            required: true 
-        },
-        transmission: { 
-            type: String, 
-            required: true 
-        },
-        features: { 
-            type: String, 
-            required: true 
-        },
-        color: { 
-            type: String, 
-            required: true 
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'Configuration', 
+        required: true
     },
     totalPrice: { 
         type: Number, 

@@ -7,6 +7,24 @@ const Order = require("../models/Orders.model");
 const Inventory = require("../models/Inventory.model");
 const { isAuthenticated } = require("../middlesware/jwt.middleware");
 
+//===>>> User Information
+
+router.get('/admin/profile', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user._id; 
+  
+      const user = await User.findById(userId, '-password'); 
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.status(200).json(user);
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
 // ====>>>>cars
 
 router.get('/cars', async (req, res) => {
@@ -93,8 +111,11 @@ router.get('/admin/orders', async (req, res) => {
 
 router.put('/admin/orders/:orderId', async (req, res) => {
     try {
-        const updatedOrder = await Order.findByIdAndUpdate(req.params.orderId, { status: req.body.status }, { new: true });
-        res.status(200).json(updatedOrder);
+        const {orderId} = req.params
+        const {status} = req.body
+
+        const updatedOrder = await Order.findByIdAndUpdate(orderId, {status}, { new: true });
+        res.status(200).json({ message: `Order ${status}`,updatedOrder});
     } catch (error) {
         console.error(error)
     }
