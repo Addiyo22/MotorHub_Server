@@ -19,10 +19,21 @@ const userSchema = new Schema({
         type: String, 
         required: true 
     },
-    savedConfigurations: [{ 
-        type: Schema.Types.ObjectId, 
-        ref: 'Order'  
-    }],
+    savedConfigurations: [
+        {
+          car: {
+            type: Schema.Types.ObjectId,
+            ref: 'Car',
+            required: true
+          },
+          engine: String,
+          transmission: String,
+          interiorColor: String,
+          exteriorColor: String,
+          features: [String],
+          price: Number
+        }
+      ],
     isAdmin: { 
         type: Boolean, 
         default: false

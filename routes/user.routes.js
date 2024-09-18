@@ -6,9 +6,7 @@ const router = require("express").Router();
 const User = require("../models/User.model")
 const Car = require("../models/Car.model")
 const Review = require('../models/Review.model')
-const Orders = require('../models/Orders.model')
-const Inventory = require('../models/Inventory.model')
-const Configuration = require('../models/Configuration.model')
+const Order = require('../models/Orders.model')
 const {isAuthenticated} = require('../middlesware/jwt.middleware')
 
 //===>>> User Information
@@ -46,7 +44,7 @@ router.get("/car", async (req, res, next) => {
         const { carId } = req.params;
         const car = await Car.findById(carId);
         const reviews = await Review.find({ car: carId }).populate('user', 'name');
-        res.status(200).json(car, reviews);
+        res.status(200).json({car, reviews});
     } catch (error) {
         console.error(error)
     }
@@ -55,24 +53,40 @@ router.get("/car", async (req, res, next) => {
 
   // ===>>> Configurations
 
-  router.post('/cars/:carId/configure', async (req, res) => {
+  router.post('/cars/:carId/configure', isAuthenticated, async (req, res) => {
     try {
       const { carId } = req.params;
-      const { engine, transmission, color, features, totalPrice } = req.body;
-      const userId = req.user._id; 
+      const { engine, transmission, exteriorColor, interiorColor, features, price } = req.body;
+      const userId = req.payload._id; 
+      console.log("req====>",req.params)
+      
+      const car = await Car.findById(carId);
+      car.engine = engine || car.engine;
+      car.transmission = transmission || car.transmission;
+      car.interiorColor = interiorColor || car.interiorColor;
+      car.exteriorColor = exteriorColor || car.exteriorColor;
+      car.features = features || car.features;
+      car.price = price || car.price;
   
-      const newConfig = new Configuration({
-        user: userId,
-        car: carId,
+      const updatedCar = await car.save();
+
+      const user = await User.findById(userId);
+      user.savedConfigurations.push({
+        car: car._id,
         engine,
         transmission,
-        color,
+        interiorColor,
+        exteriorColor,
         features,
-        totalPrice
+        price
       });
   
-      const savedConfig = await newConfig.save();
-      res.status(201).json({ message: 'Car configured successfully', configuration: savedConfig });
+      await user.save();  
+      res.status(200).json({
+        message: 'Car configured successfully and saved to user profile',
+        car: updatedCar,
+        userConfigurations: user.savedConfigurations
+      });
     } catch (err) {
       console.error(err);
     }
@@ -80,7 +94,7 @@ router.get("/car", async (req, res, next) => {
 
   router.get('/user/configurations', async (req, res) => {
     try {
-      const userId = req.user._id; 
+      const userId = req.payload._id; 
   
       const configurations = await Configuration.find({ user: userId }).populate('car');
   
@@ -97,11 +111,20 @@ router.get("/car", async (req, res, next) => {
 
   ///===>>>> Orders
 
-  router.post('/user/orders', async (req, res) => {
+  router.post('/user/:configurationId/order',isAuthenticated, async (req, res) => {
     try {
-      const { configurationId, totalPrice } = req.body;
-      const userId = req.user._id;  
+      const { configurationId } = req.params;
+      const userId = req.payload._id;  
 
+      const user = await User.findById(userId).populate('savedConfigurations.car');
+      const configuration = user.savedConfigurations.find(config => {
+        return config._id.equals(configurationId);  
+});
+      console.log('Configuration found:', configuration);
+      if (!configuration) {
+        return res.status(404).json({ message: 'Configuration not found for this user' });
+      }
+      const totalPrice = configuration.price + 500
       const newOrder = new Order({
         user: userId,
         configuration: configurationId,
@@ -120,8 +143,8 @@ router.get("/car", async (req, res, next) => {
 
   router.get('/inventory', async (req, res) => {
     try {
-        const inventory = await Inventory.find()
-        res.status(202).json(inventory)
+      const cars = await Car.find({ available: true });
+        res.status(202).json(cars)
     } catch (error) {
         console.error(error)
     }
@@ -130,7 +153,11 @@ router.get("/car", async (req, res, next) => {
 
   router.get('/inventory/:carId', async (req, res) => {
     try {
-      const carInventory = await Inventory.findOne({ car: req.params.carId }).populate('car');
+      const carInventory = await Car.findById(req.params.carId )
+      console.log('Requested carId:', carInventory);
+      if (!carInventory) {
+        return res.status(404).json({ message: 'Car not found' });
+      }
       res.status(200).json(carInventory);
     } catch (error) {
         console.error(error)

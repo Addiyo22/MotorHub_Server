@@ -4,10 +4,9 @@ const User = require("../models/User.model")
 const Car = require("../models/Car.model")
 const Review = require('../models/Review.model')
 const Order = require("../models/Orders.model");
-const Inventory = require("../models/Inventory.model");
 const { isAuthenticated } = require("../middlesware/jwt.middleware");
 
-//===>>> User Information
+//===>>> Admin Information
 
 router.get('/admin/profile', isAuthenticated, async (req, res) => {
     try {
@@ -39,19 +38,12 @@ router.get('/cars', async (req, res) => {
 
 router.post('/admin/newCar', async (req, res) => {
     try{
-        const newCar = new Car(req.body.carDetails);
+        const newCar = new Car(req.body);
         const savedCar = await newCar.save();
-        const newInventory = new Inventory({
-            car: savedCar._id,                  
-            quantity: req.body.inventoryDetails.quantity,  
-            location: req.body.inventoryDetails.location
-        })
-        const savedInventory = await newInventory.save();
-    
+        console.log(req.body)
     res.status(201).json({ 
-        message: 'Car and inventory added successfully',
-        car: savedCar,
-        inventory: savedInventory
+        message: 'Car added successfully',
+        car: savedCar
     });
     }
     catch(error){
@@ -64,7 +56,7 @@ router.get('/admin/cars/:carId', async (req,res) => {
         const { carId } = req.params;
         const car = await Car.findById(carId);
         const reviews = await Review.find({ car: carId }).populate('user', 'name');
-        res.status(200).json(car, reviews);
+        res.status(200).json({car, reviews});
     } catch (error) {
         console.error(error)
     }
@@ -85,11 +77,9 @@ router.delete('/admin/cars/:carId', async (req, res) => {
     try {
         const { carId } = req.params;
         const deletedCar = await Car.findByIdAndDelete(carId);
-        const deletedInventory = await Inventory.findOneAndDelete({ car: carId });
         res.status(200).json({
             message: "Car and associated inventory deleted successfully",
-            car: deletedCar,
-            inventory: deletedInventory
+            car: deletedCar
           });
     } catch (error) {
         console.error(error)
@@ -101,7 +91,7 @@ router.delete('/admin/cars/:carId', async (req, res) => {
 
 router.get('/admin/orders', async (req, res) => {
     try {
-        const orders = await Order.find().populate('user').populate('car');
+        const orders = await Order.find().populate('user');
         res.status(200).json(orders);
     } catch (error) {
         console.error(error)
@@ -165,19 +155,19 @@ router.delete('/admin/users/:userId/delete', async (req, res) => {
 
 // ===>>> Inventory
 
-router.get('/inventory/:carId', async (req, res) => {
+router.get('/inventory/:carId',isAuthenticated, async (req, res) => {
     try {
-      const carInventory = await Inventory.findOne({ car: req.params.carId }).populate('car');
+      const carInventory = await Car.find({ available: true })
       res.status(200).json(carInventory);
     } catch (error) {
         console.error(error)
     }
   });
 
-  router.put('/admin/inventory/:inventoryId', async (req, res) => {
+  router.put('/admin/inventory/:carId', async (req, res) => {
     try {
-      const updatedInventory = await Inventory.findByIdAndUpdate(
-        req.params.inventoryId,
+      const updatedInventory = await Car.findByIdAndUpdate(
+        req.params.carId,
         req.body, 
         { new: true }
       );
@@ -191,11 +181,11 @@ router.get('/inventory/:carId', async (req, res) => {
   //===>>> Reviews
 
   
-  router.post('/cars/:carId/review', async (req, res) => {
+  router.post('/cars/:carId/review',isAuthenticated, async (req, res) => {
     try {
       const { carId } = req.params;
       const { rating, comment } = req.body;
-      const userId = req.user._id;
+      const userId = req.payload._id;
   
       const car = await Car.findById(carId);
       const newReview = new Review({
@@ -216,7 +206,7 @@ router.get('/inventory/:carId', async (req, res) => {
   router.delete('/cars/:carId/review/:reviewId', isAuthenticated, async (req, res) => {
     try {
       const { carId, reviewId } = req.params;
-      const userId = req.user._id; 
+      const userId = req.payload._id; 
 
       const review = await Review.findOne({ _id: reviewId, car: carId });
 

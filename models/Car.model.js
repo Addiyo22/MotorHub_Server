@@ -3,7 +3,8 @@ const { Schema, model} = require("mongoose");
 const carSchema = new Schema({
     make: { 
         type: String, 
-        required: true 
+        required: true
+        /* enum: ['Mercedes', 'BMW', 'Toyota','Volkswagen']  */ 
     },
     model: { 
         type: String, 
@@ -24,7 +25,7 @@ const carSchema = new Schema({
     },
     transmission: { 
         type: String,
-        enum: ['Automatic', 'Manual', 'CVT','DSG'], 
+        enum: ['Automatic', 'Manual', 'CVT','DSG'] 
     },
     interiorColor: { 
         type: String 
@@ -32,9 +33,7 @@ const carSchema = new Schema({
     exteriorColor: { 
         type: String 
     },
-    features: { 
-        type: String 
-    },
+    features: [String],
     price: { 
         type: Number, 
         required: true 
@@ -42,6 +41,12 @@ const carSchema = new Schema({
     available: { 
         type: Boolean, 
         default: true 
+    },
+    quantity: {
+        type: Number
+    },
+    location: {
+        type: String
     }
 }, { timestamps: true }); 
 
