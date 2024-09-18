@@ -57,9 +57,7 @@ router.get("/car", async (req, res, next) => {
     try {
       const { carId } = req.params;
       const { engine, transmission, exteriorColor, interiorColor, features, price } = req.body;
-      const userId = req.payload._id; 
-      console.log("req====>",req.params)
-      
+      const userId = req.payload._id;   
       const car = await Car.findById(carId);
       car.engine = engine || car.engine;
       car.transmission = transmission || car.transmission;
