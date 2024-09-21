@@ -18,7 +18,16 @@ function getTokenFromHeaders (req) {
   
   return null;
 }
+
+const checkAdmin = (req, res, next) => {
+  if (req.payload && req.payload.isAdmin) {
+    return next();
+  } else {
+    return res.status(403).json({ message: 'Access denied. Admins only.' });
+  }
+};
+
  
 module.exports = {
-  isAuthenticated
+  isAuthenticated, checkAdmin
 }

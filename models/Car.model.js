@@ -4,35 +4,33 @@ const carSchema = new Schema({
     make: { 
         type: String, 
         required: true
-        /* enum: ['Mercedes', 'BMW', 'Toyota','Volkswagen']  */ 
     },
-    model: { 
+    model: [{ 
         type: String, 
         required: true 
-    },
+    }],
     year: { 
         type: String, 
         required: true 
     },
-    trim: { 
+    trim: [{ 
         type: String 
-    },
-    engine: { 
+    }],
+    engine: [{ 
         type: String 
-    },
-    engineHorsepower: { 
+    }],
+    engineHorsepower: [{ 
         type: Number 
-    },
-    transmission: { 
+    }],
+    transmission: [{ 
         type: String,
-        enum: ['Automatic', 'Manual', 'CVT','DSG'] 
-    },
-    interiorColor: { 
+    }],
+    interiorColor: [{ 
         type: String 
-    },
-    exteriorColor: { 
+    }],
+    exteriorColor: [{ 
         type: String 
-    },
+    }],
     features: [String],
     price: { 
         type: Number, 

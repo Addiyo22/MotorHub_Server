@@ -30,9 +30,9 @@ router.get('/user/profile', isAuthenticated, async (req, res) => {
   //====>>> Car
 
 
-router.get("/car", async (req, res, next) => {
+router.get("/cars", async (req, res, next) => {
     try{
-        const cars = await Car.find()
+        const cars = await Car.find({ quantity: { $exists: false } });
         res.status(200).json(cars); 
     }catch(err) {
         console.error(err)
@@ -90,7 +90,7 @@ router.get("/car", async (req, res, next) => {
     }
   });
 
-  router.get('/user/configurations', async (req, res) => {
+  router.get('/user/configurations', isAuthenticated, async (req, res) => {
     try {
       const userId = req.payload._id; 
   
