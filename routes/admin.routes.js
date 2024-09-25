@@ -93,9 +93,48 @@ router.get('/admin/cars/:carId', isAuthenticated, checkAdmin, async (req,res) =>
 })
 
 router.put('/admin/cars/:carId', isAuthenticated, checkAdmin, async (req, res) => {
+    const { carId } = req.params;
+  const {
+    make,
+    model,
+    year,
+    trim,
+    engine,
+    engineHorsepower,
+    transmission,
+    interiorColor,
+    exteriorColor,
+    features,
+    price,
+    quantity,
+    location,
+    available,
+  } = req.body.carDetails;
     try {
-        const updatedCar = await Car.findByIdAndUpdate(req.params.carId, req.body, { new: true });
-        res.status(200).json(updatedCar);
+        const updatedCar = await Car.findByIdAndUpdate(
+            carId,
+            {
+              make,
+              model,
+              year,
+              trim,
+              engine,
+              engineHorsepower,
+              transmission,
+              interiorColor,
+              exteriorColor,
+              features: features ? features.split(',').map((f) => f.trim()) : [], // Handle empty features gracefully
+              price,
+              quantity,
+              location,
+              available,
+            },
+            { new: true, runValidators: true } // Return the updated document and run validators
+          );
+          res.status(200).json({
+            message: 'Car updated successfully',
+            car: updatedCar,
+          });
     } catch (error) {
         console.error(error)
     }
@@ -118,29 +157,56 @@ router.delete('/admin/cars/:carId', isAuthenticated, checkAdmin, async (req, res
 
 router.get('/admin/orders', isAuthenticated, checkAdmin, async (req, res) => {
     try {
-        const orders = await Order.find().populate('user');
-        res.status(200).json(orders);
+        const orders = await Order.find().populate('user').populate('configurationId');
+
+    // Map orders to include the full configuration details from the user's saved configurations
+    const ordersWithConfigurations = orders.map((order) => {
+      // Ensure the user and savedConfigurations exist
+      const user = order.user;
+      if (!user || !user.savedConfigurations) {
+        return { ...order._doc, configuration: null };
+      }
+
+      // Find the configuration from the user's saved configurations matching the order's configurationId
+      const configuration = user.savedConfigurations.find((config) =>
+        config._id.equals(order.configurationId)
+      );
+
+      // Return the order with the configuration details
+      return { ...order._doc, configuration: configuration || null };
+    });
+
+    // Send the processed orders as a response
+    res.status(200).json(ordersWithConfigurations);
     } catch (error) {
         console.error(error)
     }
 });
 
-router.put('/admin/orders/:orderId', isAuthenticated, checkAdmin, async (req, res) => {
+router.patch('/admin/orders/:orderId/accept', isAuthenticated, checkAdmin, async (req, res) => {
     try {
         const {orderId} = req.params
-        const {status} = req.body
 
-        const updatedOrder = await Order.findByIdAndUpdate(orderId, {status}, { new: true });
-        res.status(200).json({ message: `Order ${status}`,updatedOrder});
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId,
+            { status: 'Accepted' },
+            { new: true }
+          );
+        res.status(200).json({ message: `Order Accepted`,updatedOrder});
     } catch (error) {
         console.error(error)
     }
 });
 
-router.delete('/admin/orders/:orderId', isAuthenticated, checkAdmin, async (req, res) => {
+router.patch('/admin/orders/:orderId/reject', isAuthenticated, checkAdmin, async (req, res) => {
     try {
-        await Order.findByIdAndDelete(req.params.orderId)
-        res.status(200).json({ message: "Order deleted successfully" });
+        const {orderId} = req.params
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId,
+            { status: 'Rejected' },
+            { new: true }
+          );
+        res.status(200).json({ message: "Order Rejected",updatedOrder });
     } catch (error) {
         console.error(error)
     }

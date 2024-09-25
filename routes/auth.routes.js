@@ -7,6 +7,8 @@ const { isAuthenticated } = require("../middlesware/jwt.middleware");
 const router = express.Router();
 const saltRounds = 10;
 
+//user signup
+
 router.post('/signup', (req, res, next) => {
     const { email, password, name, username } = req.body;
    
@@ -44,7 +46,7 @@ router.post('/signup', (req, res, next) => {
         const salt = bcrypt.genSaltSync(saltRounds);
         const hashedPassword = bcrypt.hashSync(password, salt);
    
-        return User.create({ email, password: hashedPassword, name, username });
+        return User.create({ email, password: hashedPassword, name, username});
       })
       .then((createdUser) => {
 
@@ -60,6 +62,60 @@ router.post('/signup', (req, res, next) => {
       });
   });
 
+  // admin signup
+
+  router.post('/admin/signup', (req, res, next) => {
+    const { email, password, name, username } = req.body;
+   
+    // Check if the email or password or name is provided as an empty string 
+    if (email === '' || password === '' || name === '' || !username) {
+      res.status(400).json({ message: "Provide email, password, name and username" });
+      return;
+    }
+   
+    // Use regex to validate the email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailRegex.test(email)) {
+      res.status(400).json({ message: 'Provide a valid email address.' });
+      return;
+    }
+    
+    // Use regex to validate the password format
+    const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+    if (!passwordRegex.test(password)) {
+      res.status(400).json({ message: 'Password must have at least 6 characters and contain at least one number, one lowercase and one uppercase letter.' });
+      return;
+    }
+   
+   
+    // Check the users collection if a user with the same email already exists
+    User.findOne({ email })
+      .then((foundUser) => {
+        // If the user with the same email already exists, send an error response
+        if (foundUser) {
+          res.status(400).json({ message: "User already exists." });
+          return;
+        }
+   
+        // If the email is unique, proceed to hash the password
+        const salt = bcrypt.genSaltSync(saltRounds);
+        const hashedPassword = bcrypt.hashSync(password, salt);
+   
+        return User.create({ email, password: hashedPassword, name, username, isAdmin: true});
+      })
+      .then((createdUser) => {
+
+        const { email, name, username, _id, isAdmin } = createdUser;
+      
+        const user = { email, name, username, _id, isAdmin };
+   
+        res.status(201).json({ user: user });
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({ message: "Internal Server Error" })
+      });
+  });
   // ====>> Update profile
 
   router.put('/profile/:userId/edit', async (req, res, next) => {

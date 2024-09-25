@@ -31,7 +31,11 @@ const userSchema = new Schema({
           interiorColor: String,
           exteriorColor: String,
           features: [String],
-          price: Number
+          price: Number,
+          isOrdered: {
+            type: Boolean,
+            default: false, 
+            }
         }
       ],
     isAdmin: { 
