@@ -303,7 +303,7 @@ router.get("/cars", async (req, res, next) => {
         return res.status(403).json({ message: 'You do not have permission to delete this review.' });
       }
   
-      await review.remove();
+      await Review.deleteOne({ _id: reviewId });
       res.status(200).json({ message: 'Review deleted successfully.' });
     } catch (error) {
       console.error('Error deleting review:', error);
