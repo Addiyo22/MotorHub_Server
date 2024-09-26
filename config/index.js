@@ -24,7 +24,9 @@ module.exports = (app) => {
   app.use(
     cors({
       credentials: true,
-      origin: ["http://localhost:5173", `${process.env.ORIGIN}`]
+      origin: ["http://localhost:5173", `${process.env.ORIGIN}`],
+      methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'], 
+      allowedHeaders: ['Content-Type', 'Authorization']
     })
   );
 
