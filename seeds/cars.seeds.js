@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 const Car = require('../models/Car.model');
 
-const MONGO_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/MotorHub";
+const MONGO_URI = "mongodb+srv://raikaraditya2244:7Gnpt6cAUjXU5hBU@cluster0.da3tt.mongodb.net/MotorHub_Server" || "mongodb://127.0.0.1:27017/MotorHub";
 
 const cars = [
     {
