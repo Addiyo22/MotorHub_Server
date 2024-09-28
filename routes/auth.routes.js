@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const User = require("../models/User.model");
+const fileUploader = require('../config/cloudinary.config');
 
 const { isAuthenticated } = require("../middlesware/jwt.middleware");
 const router = express.Router();

@@ -10,6 +10,11 @@ const orderSchema = new Schema({
     type: Schema.Types.ObjectId,
     required: true,
   },
+  car:{
+    type: Schema.Types.ObjectId,
+    ref: "Car",
+    required: true
+  },
     totalPrice: { 
         type: Number, 
         required: true 

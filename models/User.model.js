@@ -26,6 +26,10 @@ const userSchema = new Schema({
             ref: 'Car',
             required: true
           },
+          make: String,
+          model: String,
+          year: String,
+          trim: String,
           engine: String,
           transmission: String,
           interiorColor: String,

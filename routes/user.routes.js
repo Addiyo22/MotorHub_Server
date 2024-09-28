@@ -1,13 +1,10 @@
-
 const router = require("express").Router();
-
-// const mongoose = require("mongoose");
-
 const User = require("../models/User.model")
 const Car = require("../models/Car.model")
 const Review = require('../models/Review.model')
 const Order = require('../models/Orders.model')
 const {isAuthenticated} = require('../middlesware/jwt.middleware')
+const fileUploader = require('../config/cloudinary.config');
 
 //===>>> User Information
 
@@ -57,36 +54,57 @@ router.get("/cars", async (req, res, next) => {
     try {
       const { carId } = req.params;
       const { engine, transmission, exteriorColor, interiorColor, features, price } = req.body;
-      const userId = req.payload._id;   
+      const userId = req.payload._id;
+  
+      // Find the original car details without modifying it
       const car = await Car.findById(carId);
-      car.engine = engine || car.engine;
-      car.transmission = transmission || car.transmission;
-      car.interiorColor = interiorColor || car.interiorColor;
-      car.exteriorColor = exteriorColor || car.exteriorColor;
-      car.features = features || car.features;
-      car.price = price || car.price;
+      if (!car) {
+        return res.status(404).json({ message: 'Car not found' });
+      }
   
-      const updatedCar = await car.save();
+      // Process features to ensure it's always an array
+      let processedFeatures = Array.isArray(features)
+        ? features
+        : typeof features === 'string'
+        ? features.split(',').map((f) => f.trim())
+        : [];
 
-      const user = await User.findById(userId);
-      user.savedConfigurations.push({
-        car: car._id,
-        engine,
-        transmission,
-        interiorColor,
-        exteriorColor,
-        features,
-        price
-      });
+        const modelString = Array.isArray(car.model) ? car.model.join(', ') : car.model;
+        const trimString = Array.isArray(car.trim) ? car.trim.join(', ') : car.trim;
   
-      await user.save();  
+      // Create a configuration based on the car's details and any modifications provided
+      const configuration = {
+        car: car._id,
+        make: car.make,
+        model: modelString,
+        year: car.year,
+        trim: trimString,
+        engine: engine || car.engine, // Use provided engine or default to car's engine
+        transmission: transmission || car.transmission,
+        interiorColor: interiorColor || car.interiorColor,
+        exteriorColor: exteriorColor || car.exteriorColor,
+        features: processedFeatures, // Processed features array
+        price: price || car.price, // Use provided price or default to car's price
+        isOrdered: false, // Default to false, as it's just being saved as a configuration
+      };
+  
+      // Find the user and add the new configuration to their saved configurations
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      user.savedConfigurations.push(configuration);
+      await user.save();
+  
       res.status(200).json({
         message: 'Car configured successfully and saved to user profile',
-        car: updatedCar,
-        userConfigurations: user.savedConfigurations
+        configuration,
+        userConfigurations: user.savedConfigurations,
       });
     } catch (err) {
-      console.error(err);
+      console.error('Error configuring car:', err);
+      res.status(500).json({ message: 'Failed to configure the car. Please try again later.' });
     }
   });
 
@@ -114,9 +132,13 @@ router.get("/cars", async (req, res, next) => {
     const userId = req.payload._id;
     const { configurationId } = req.params;
     try {
-      await User.findByIdAndUpdate(userId, {
-        $pull: { savedConfigurations: { _id: configurationId } },
-      });
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        {
+          $pull: { savedConfigurations: { _id: configurationId } },
+        },
+        { new: true }
+      );
         res.status(200).json(updatedUser);
     } catch (error) {
         console.error(error)
@@ -153,6 +175,7 @@ router.get("/cars", async (req, res, next) => {
       const newOrder = new Order({
         user: userId,
         configurationId: configurationId,
+        car: car._id,
         totalPrice,
         status: 'Pending'
       });

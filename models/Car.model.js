@@ -1,4 +1,10 @@
-const { Schema, model} = require("mongoose");
+const mongoose = require('mongoose'); // Import mongoose
+const { Schema, model } = mongoose;
+
+const colorSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    hex: { type: String, required: true }, // Hex value for displaying the color
+  });
 
 const carSchema = new Schema({
     make: { 
@@ -25,12 +31,8 @@ const carSchema = new Schema({
     transmission: [{ 
         type: String,
     }],
-    interiorColor: [{ 
-        type: String 
-    }],
-    exteriorColor: [{ 
-        type: String 
-    }],
+    interiorColor: [colorSchema],
+    exteriorColor: [colorSchema],
     features: [String],
     price: { 
         type: Number, 
@@ -45,7 +47,8 @@ const carSchema = new Schema({
     },
     location: {
         type: String
-    }
+    },
+    images: [String],
 }, { timestamps: true }); 
 
 const Car = model('Car', carSchema);
