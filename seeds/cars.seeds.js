@@ -167,12 +167,12 @@ const cars = [
     },
     {
       "make": "Lamborghini",
-      "model": ["Huracan", "Aventador", "Urus"],
+      "model": ["Urus"],
       "year": "2023",
-      "trim": ["EVO", "STO", "SVJ"],
-      "engine": ["5.2L V10", "6.5L V12", "4.0L Twin-Turbo V8"],
-      "engineHorsepower": [630, 770, 641],
-      "transmission": ["7-Speed Dual-Clutch", "8-Speed Automatic"],
+      "trim": ["SVJ"],
+      "engine": ["4.0L Twin-Turbo V8"],
+      "engineHorsepower": [641],
+      "transmission": ["8-Speed Automatic"],
       "interiorColor": [
         { "name": "Black", "hex": "#000000" },
         { "name": "Yellow", "hex": "#FFFF00" },
