@@ -10,7 +10,7 @@ const fileUploader = require('../config/cloudinary.config');
 
 router.get('/user/profile', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user._id; 
+      const userId = req.payload._id; 
   
       const user = await User.findById(userId, '-password'); 
   
@@ -40,7 +40,7 @@ router.get("/cars", async (req, res, next) => {
     try {
         const { carId } = req.params;
         const car = await Car.findById(carId);
-        const reviews = await Review.find({ car: carId }).populate('user', 'name');
+        const reviews = await Review.find({ car: carId }).populate('user', 'firstname lastname');
         res.status(200).json({car, reviews});
     } catch (error) {
         console.error(error)
@@ -305,7 +305,7 @@ router.get("/cars", async (req, res, next) => {
   
     try {
       const reviews = await Review.find({ car: carId })
-        .populate('user', 'username name') 
+        .populate('user', 'firstname lastname') 
         .populate('car', 'make model year'); 
   
       res.status(200).json(reviews);
