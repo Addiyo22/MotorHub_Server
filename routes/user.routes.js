@@ -29,7 +29,9 @@ router.get('/user/profile', isAuthenticated, async (req, res) => {
 
 router.get("/cars", async (req, res, next) => {
     try{
-        const cars = await Car.find({ quantity: { $exists: false } });
+        const cars = await Car.find({
+          $or: [{ quantity: { $exists: false } }, { quantity: null }]
+        });
         res.status(200).json(cars); 
     }catch(err) {
         console.error(err)
@@ -242,7 +244,9 @@ router.get("/cars", async (req, res, next) => {
 
   router.get('/inventory', async (req, res) => {
     try {
-      const cars = await Car.find({ quantity: { $exists: true }});
+      const cars = await Car.find({
+        $or: [{ quantity: { $exists: true } }, { quantity: !null }]
+      });
         res.status(202).json(cars)
     } catch (error) {
         console.error(error)
