@@ -122,7 +122,6 @@ router.post('/signup', async (req, res, next) => {
   router.put('/profile/:userId/edit', async (req, res, next) => {
 
     const {userId} = req.params;
-    console.log('user',userId)
     const { email, password, firstname, lastname } = req.body;
    
     // Check if the email or password or name is provided as an empty string 
@@ -161,7 +160,6 @@ router.post('/signup', async (req, res, next) => {
           }
 
           const updatedUser = await User.findByIdAndUpdate(userId, updatedFields, { new: true });
-          console.log('upsateduser', updatedUser)
           const { _id, email: updatedEmail, firstname: updatedFirstname, lastname: updatedLastname } = updatedUser;
           res.status(200).json({ user: { _id, email: updatedEmail, firstname: updatedFirstname, lastname: updatedLastname } });
    } catch (error) {
@@ -219,7 +217,6 @@ router.get('/verify', isAuthenticated, (req, res, next) => {       // <== CREATE
  
   // If JWT token is valid the payload gets decoded by the
   // isAuthenticated middleware and made available on `req.payload`
-  console.log(`req.payload`, req.payload);
  
   // Send back the object with user data
   // previously set as the token payload

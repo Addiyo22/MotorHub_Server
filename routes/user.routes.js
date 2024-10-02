@@ -196,9 +196,8 @@ router.get("/cars", async (req, res, next) => {
 
   router.get('/user/:userId/orders', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.payload._id; // Ensure req.payload is correctly set by the middleware
+      const userId = req.payload._id; 
   
-      // Fetch orders for the user
       const orders = await Order.find({ user: userId });
   
       // Fetch the user with saved configurations
@@ -215,23 +214,10 @@ router.get("/cars", async (req, res, next) => {
           config._id.equals(order.configurationId)
         );
   
-        // Debugging: Log when configuration or car is not found
-        if (!configuration) {
-          console.log(
-            `Configuration with ID ${order.configurationId} not found for user ${userId}`
-          );
-        } else if (!configuration.car) {
-          console.log(
-            `Car details not found for configuration ID ${configuration._id}`
-          );
-        }
-  
         // Attach the configuration to the order object
         return { ...order._doc, configuration: configuration || null };
       });
   
-      // Log the processed orders to help with debugging
-      console.log('Processed Orders with Configurations:', ordersWithConfigurations);
       res.status(200).json(ordersWithConfigurations);
     } catch (error) {
       console.error('Error fetching user orders:', error);
@@ -257,7 +243,6 @@ router.get("/cars", async (req, res, next) => {
   router.get('/inventory/:carId', async (req, res) => {
     try {
       const carInventory = await Car.findById(req.params.carId )
-      console.log('Requested carId:', carInventory);
       if (!carInventory) {
         return res.status(404).json({ message: 'Car not found' });
       }
