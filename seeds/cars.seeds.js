@@ -98,7 +98,7 @@ const cars = [
       "price": 100000,
       "available": true,
       "images": [
-        "https://news.dupontregistry.com/wp-content/uploads/2023/11/DSC09425-scaled.jpg",
+        "https://images.ctfassets.net/hbvlqhiip2ie/47ZZSRrDlHRk2v99IsaqBp/5035aba2d0b4e112c8e0776b2d88f65f/M3_Touring_LCI_0012_P90551039_highRes_the-new-bmw-m3-touri.jpg?fit=fill&fm=webp&w=2880&h=1800",
       ]
     },
     {
